@@ -15,6 +15,14 @@ import org.springframework.stereotype.Service;
  * future.thenAccept  执行完成后通知
  * CompletableFuture.allOf 编排异步任务 - 全部成功后通知thenAccept， 类似创建一个异步监听
  * future.join()  主线程会等待
+ * 老爷和两个管家
+ * 老爷想喝茶
+ * 让两个管家协助
+ * 一个烧水
+ * 一个选茶叶
+ * 自己去上厕所
+ * 回来就可以喝茶
+ * 岂不乐哉？？？
  * @Author Mr.Yuxd
  * @Date 2022/11/8
  * @Version 1.0
@@ -24,32 +32,34 @@ import org.springframework.stereotype.Service;
 public class QueryService {
 
     @Autowired
-    private GoodService goodService;
+    private TeaService teaService;
 
     public Map<String,Object> queryGoodsInfo(){
         Map<String, Object> res = new HashMap<>();
 
-        //异步执行任务 查询商品数量
-        CompletableFuture<Integer> numFuture = CompletableFuture.supplyAsync(() -> goodService.getGoodsNum());
+        //异步执行任务 烧水
+        log.info("老李,去帮我把水烧一下，一会我要喝茶");
+        CompletableFuture<Integer> numFuture = CompletableFuture.supplyAsync(() -> teaService.heatUpWater());
 
         numFuture.thenAccept((result) -> {
-            log.info("查询numFuture: {}",result);
-            res.put("goodsNum", result);
+            log.info("老爷水烧好了,花了{}分钟",result);
+            res.put("烧水时间", result);
         }).exceptionally((e) ->{
-            log.error("查询异常: {}", e.getMessage(), e);
-            res.put("goodsNum", null);
+            log.error("锅烧炸了: {}", e.getMessage(), e);
+            res.put("烧水时间", null);
             return null;
         });
 
 
-        //异步执行任务 查询商品价格
-        CompletableFuture<Double> priceFuture = CompletableFuture.supplyAsync(() -> goodService.getGoodsPrice());
+        //异步执行任务 挑选茶叶
+        log.info("小蓉,去帮我挑选一下茶叶");
+        CompletableFuture<Double> priceFuture = CompletableFuture.supplyAsync(() -> teaService.getTeas());
         priceFuture.thenAccept((result) ->{
-            log.info("查询priceFuture: {}",result);
-            res.put("goodsPrice", result);
+            log.info("老爷,茶叶挑选好了,先试试{}克的碧螺春",result);
+            res.put("挑选茶叶时间", result);
         }).exceptionally((e) ->{
-            log.error("查询异常: {}", e.getMessage(), e);
-            res.put("goodsPrice", null);
+            log.error("茶被老鼠吃了: {}", e.getMessage(), e);
+            res.put("挑选茶叶时间", null);
             return null;
         });
 
@@ -58,17 +68,17 @@ public class QueryService {
             .allOf(numFuture, priceFuture);
         //执行完成后回调
         CompletableFuture<Map<String, Object>> future = allQuery.thenApply((result) -> {
-            log.info("------------------ 全部查询都完成 ------------------ ");
+            log.info("------------------ 老爷不放心，看一下监控，发现都弄好了 ------------------ ");
             return res;
         }).exceptionally((e) -> {
             log.error(e.getMessage(), e);
             return null;
         });
-
+        log.info("我去上个厕所，弄好了给我发消息，一会回来喝茶");
         // --这里主线程会等待异步线程全部执行完毕
         // --去掉future.join() 主线程不等待
         future.join();
-        log.info("主线程执行--完成");
+        log.info("开始喝茶...");
         return res;
     }
 

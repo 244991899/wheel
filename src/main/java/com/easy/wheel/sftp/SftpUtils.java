@@ -2,13 +2,10 @@ package com.easy.wheel.sftp;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Properties;
 import java.util.Vector;
 import lombok.extern.slf4j.Slf4j;
